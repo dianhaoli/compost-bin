@@ -3,17 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Compost Bin Dashboard</title>
+  <title>🌱 Compost Bin Dashboard</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>🌱Compost Bin Dashboard</h1>
-    <p>Real-time distance from sensor:</p>
-    <div id="distance">Loading...</div>
+    <h1>🌱 Compost Bin Dashboard</h1>
+    <p>Real-time distances from all sensors:</p>
+
+    <!-- 🔹 This is the only required element for the JS to target -->
+    <div id="bins" class="bins">
+      <p>Loading data...</p>
+    </div>
   </div>
 
-  <!-- Firebase SDK and custom script -->
+  <!-- Firebase + your custom script -->
   <script type="module" src="script.js"></script>
 </body>
 </html>

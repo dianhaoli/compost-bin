@@ -34,7 +34,7 @@ Hosting: Firebase Hosting or local web server
 ## Setup Instructions
 
 1. Clone or download the project:
-   git clone https://github.com/your-username/compost-bin-alert-system.git
+   git clone https://github.com/dianhaoli/compost-bin-alert-system.git
 2. Open index.html in your browser.
 3. Ensure your Firebase Realtime Database contains valid data under Sensor/data/.
 4. The dashboard will update automatically as data changes.

@@ -2,13 +2,9 @@
 #include <Firebase_ESP_Client.h>
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
+#include "config.h"
 
-// --- WiFi & Firebase Credentials ---
-#define WIFI_SSID "iPhone"
-#define WIFI_PASSWORD "12345678"
 
-#define API_KEY "AIzaSyB5GKSdrHjKjUwsTYt_ksmvrINWjS7xYHg"
-#define DATABASE_URL "https://compost-bin-alert-syste-default-rtdb.firebaseio.com/"
 
 // --- Ultrasonic Sensor Pins ---
 #define TRIG_PIN 14

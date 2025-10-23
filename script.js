@@ -17,7 +17,7 @@ const binNames = {
   "bin_206D37004F8C": "Compost Bin 1 - Backyard",
   "binac67b2ff0a4c": "Compost Bin 2 - North Corner",
   "binbc5f9d3e14c2": "Compost Bin 3 - Greenhouse",
-  "bin9f85d6a0e221": "Compost Bin 4 - Compost Zone"
+  "bin9f85d6a0e221": "Compost Bin 4 - Compost Zone",
 };
 
 // --- DOM Setup ---
@@ -34,7 +34,6 @@ if (!binsContainer) {
     const data = snapshot.val();
     binsContainer.innerHTML = ""; // Clear old data
 
-    // Check if data is valid
     if (!data || typeof data !== "object") {
       binsContainer.innerHTML = "<p>No data available...</p>";
       return;
@@ -43,16 +42,26 @@ if (!binsContainer) {
     // Loop through all bins found in Firebase
     Object.keys(data).forEach((binID) => {
       const binData = data[binID] || {};
-      const name = binNames[binID] || binID; // fallback to raw ID if no mapping
-      const distanceVal = binData.distance;
+      const name = binNames[binID] || binID;
 
-      // Check if distance is a number before formatting
+      const distanceVal = binData.distance;
+      const fillVal = binData.fill_percent;
+      const status = binData.status || "unknown";
+
       const distance =
         typeof distanceVal === "number"
           ? `${distanceVal.toFixed(2)} cm`
           : "No data";
 
-      const status = binData.status || "unknown";
+      const fill =
+        typeof fillVal === "number"
+          ? `${fillVal.toFixed(1)}%`
+          : "No data";
+
+      // Determine fill color (based on fullness)
+      let color = "green";
+      if (fillVal >= 80) color = "red";
+      else if (fillVal >= 50) color = "orange";
 
       // Create bin card
       const card = document.createElement("div");
@@ -61,8 +70,12 @@ if (!binsContainer) {
       card.innerHTML = `
         <h2>${name}</h2>
         <p><strong>ID:</strong> ${binID}</p>
-        <p>Distance: ${distance}</p>
-        <p>Status: ${status}</p>
+        <p><strong>Distance:</strong> ${distance}</p>
+        <p><strong>Fill Level:</strong> ${fill}</p>
+        <div class="progress">
+          <div class="bar" style="width:${fillVal || 0}%; background:${color};"></div>
+        </div>
+        <p><strong>Status:</strong> ${status}</p>
       `;
 
       binsContainer.appendChild(card);

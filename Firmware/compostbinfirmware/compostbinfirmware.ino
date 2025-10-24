@@ -168,7 +168,7 @@ void loop() {
 
     FirebaseJson json;
     json.set("distance", distance);
-    json.set("fill_percent", fill_percent);  // ✅ Always included now
+    json.set("fill_percent", fill_percent);  
     json.set("timestamp", millis());
     json.set("status", distance > 0 ? "active" : "error");
 

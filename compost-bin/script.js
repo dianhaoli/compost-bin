@@ -44,7 +44,7 @@ if (!binsContainer) {
       const binData = data[binID] || {};
       const name = binNames[binID] || binID;
 
-      const distanceVal = binData.distance;
+      const distanceVal = binData.average_distance;
       const fillVal = binData.fill_percent;
       const status = binData.status || "unknown";
 

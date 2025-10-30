@@ -5,7 +5,7 @@
 #include "config.h"
 
 // --- Ultrasonic Sensor Pins ---
-#define TRIG_PIN1 14
+#define TRIG_PIN1 17
 #define ECHO_PIN1 4
 #define TRIG_PIN2 27
 #define ECHO_PIN2 26

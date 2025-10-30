@@ -4,11 +4,11 @@
 #include "addons/RTDBHelper.h"
 #include "config.h"
 
-
-
 // --- Ultrasonic Sensor Pins ---
-#define TRIG_PIN 14
-#define ECHO_PIN 4
+#define TRIG_PIN1 14
+#define ECHO_PIN1 4
+#define TRIG_PIN2 27
+#define ECHO_PIN2 26
 
 // --- Constants ---
 #define SEND_INTERVAL 5000          // ms
@@ -28,15 +28,15 @@ float distance = 0;
 float fill_percent = 0;
 String binPath = "";
 
-// --- Function: Measure one distance ---
-float singleDistance() {
-  digitalWrite(TRIG_PIN, LOW);
+// --- Function: Measure one distance for given pins ---
+float singleDistance(int trigPin, int echoPin) {
+  digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
-  digitalWrite(TRIG_PIN, HIGH);
+  digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
-  digitalWrite(TRIG_PIN, LOW);
+  digitalWrite(trigPin, LOW);
 
-  long duration = pulseInLong(ECHO_PIN, HIGH, MEASURE_TIMEOUT);
+  long duration = pulseInLong(echoPin, HIGH, MEASURE_TIMEOUT);
   if (duration == 0) return -1.0;
 
   float dist = (duration * 0.0343) / 2.0;
@@ -44,13 +44,13 @@ float singleDistance() {
   return dist;
 }
 
-// --- Function: Median Filter ---
-float medianDistance(int samples = 7) {
+// --- Function: Median Filter per sensor ---
+float medianDistance(int trigPin, int echoPin, int samples = 7) {
   float readings[15];
   int valid = 0;
 
   for (int i = 0; i < samples; i++) {
-    float d = singleDistance();
+    float d = singleDistance(trigPin, echoPin);
     if (d > 0) readings[valid++] = d;
     delay(60);
   }
@@ -87,11 +87,14 @@ float calculateFillPercent(float distance) {
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("\n=== Compost Bin Sensor Starting ===");
+  Serial.println("\n=== Compost Bin Sensor Starting (Dual Ultrasonic) ===");
 
-  pinMode(TRIG_PIN, OUTPUT);
-  pinMode(ECHO_PIN, INPUT);
-  digitalWrite(TRIG_PIN, LOW);
+  pinMode(TRIG_PIN1, OUTPUT);
+  pinMode(ECHO_PIN1, INPUT);
+  pinMode(TRIG_PIN2, OUTPUT);
+  pinMode(ECHO_PIN2, INPUT);
+  digitalWrite(TRIG_PIN1, LOW);
+  digitalWrite(TRIG_PIN2, LOW);
 
   // --- WiFi Connection ---
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -148,35 +151,43 @@ void loop() {
     return;
   }
 
-  // --- Measure distance ---
-  distance = medianDistance(7);
+  // --- Measure both sensors ---
+  float d1 = medianDistance(TRIG_PIN1, ECHO_PIN1, 7);
+  float d2 = medianDistance(TRIG_PIN2, ECHO_PIN2, 7);
 
-  // Always compute fill_percent (even if invalid distance)
-  fill_percent = calculateFillPercent(distance);
+  // --- Average distances ---
+  float avgDistance = -1.0;
+  if (d1 > 0 && d2 > 0)
+    avgDistance = (d1 + d2) / 2.0;
+  else if (d1 > 0)
+    avgDistance = d1;
+  else if (d2 > 0)
+    avgDistance = d2;
 
-  // Print for debugging
-  Serial.printf("DEBUG → Distance: %.2f cm | Fill: %.2f%%\n", distance, fill_percent);
+  // --- Compute fill percentage ---
+  float fill_percent = calculateFillPercent(avgDistance);
 
-  if (distance > 0)
-    Serial.printf("📏 Median Distance: %.2f cm | 🪣 Fill Level: %.1f%%\n", distance, fill_percent);
-  else
-    Serial.println("⚠️ Sensor reading failed");
+  // --- Debug output ---
+  Serial.printf("Sensor1: %.2f cm | Sensor2: %.2f cm | Avg: %.2f cm | Fill: %.1f%%\n",
+                d1, d2, avgDistance, fill_percent);
 
   // --- Send data to Firebase ---
   if (Firebase.ready() && signupOK && (millis() - sendDataPrev >= SEND_INTERVAL)) {
     sendDataPrev = millis();
 
     FirebaseJson json;
-    json.set("distance", distance);
-    json.set("fill_percent", fill_percent);  // ✅ Always included now
+    json.set("sensor1_distance", d1);
+    json.set("sensor2_distance", d2);
+    json.set("average_distance", avgDistance);
+    json.set("fill_percent", fill_percent);
     json.set("timestamp", millis());
-    json.set("status", distance > 0 ? "active" : "error");
+    json.set("status", avgDistance > 0 ? "active" : "error");
 
     Serial.println("Uploading JSON →");
-    Serial.println(json.raw());  // Debug line: shows what’s sent
+    Serial.println(json.raw());
 
     if (Firebase.RTDB.setJSON(&fbdo, binPath.c_str(), &json))
-      Serial.printf("✅ Data saved → %.2f cm | %.1f%% full\n", distance, fill_percent);
+      Serial.printf("✅ Data saved → Avg: %.2f cm | %.1f%% full\n", avgDistance, fill_percent);
     else
       Serial.printf("❌ Firebase error: %s\n", fbdo.errorReason().c_str());
   }

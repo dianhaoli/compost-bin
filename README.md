@@ -1,4 +1,5 @@
 # Compost Bin Alert System
+https://compost-bin-alert-syste.web.app
 
 The Compost Bin Alert System is a simple web-based application that monitors compost bin levels in real time using Firebase. It displays live data such as distance and status for each bin to help track when bins are full or need attention.
 Originally part of environmental startup CompostNow’s larger system managing 35 million lbs of compost.
@@ -6,6 +7,9 @@ Originally part of environmental startup CompostNow’s larger system managing 3
 ## Overview
 
 This system connects sensors (such as ultrasonic modules) to Firebase Realtime Database. The web dashboard automatically retrieves and displays each bin’s ID, name, distance, and status. It is designed to help users manage compost bins efficiently and promote sustainable waste management.
+
+<img width="1704" height="981" alt="image" src="https://github.com/user-attachments/assets/37f76e72-9cd7-491f-b236-7a25b841f217" />
+
 
 ## Features
 
